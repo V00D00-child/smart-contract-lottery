@@ -48,6 +48,43 @@ describe('Lottery smart contract', () => {
         assert.equal(1, players.length);
     });
 
+    it('Should emit Enter event when account enter to into lottery', async () => {
+        const enterResult = await lotteryContract.methods.enter().send({
+            from: playerOneAccount,
+            value: web3.utils.toWei('0.02', 'ether')
+        });
+
+        const players = await lotteryContract.methods.getPlayers().call({
+            from: deployerAccount
+        });
+
+        assert.equal(playerOneAccount, players[0]);
+        assert.equal(1, players.length);
+
+        // event emitted
+        assert.equal('Enter', enterResult.events.Enter.event);
+        assert.equal(1, enterResult.events.Enter.returnValues.players.length);
+
+    });
+
+    it('Should not allow manage account to enter to into lottery', async () => {
+        try {
+            await lotteryContract.methods.enter().send({
+                from: deployerAccount,
+                value: web3.utils.toWei('0.02', 'ether')
+            });
+        } catch (err) {
+            assert(err);
+            assert.equal(EVM_REVERT, err.message);
+
+            const players = await lotteryContract.methods.getPlayers().call({
+                from: deployerAccount
+            });
+    
+            assert.equal(0, players.length);
+        }
+    });
+
     it('Should allow multiple accounts to enter into lottery', async () => {
         await lotteryContract.methods.enter().send({
             from: playerOneAccount,
@@ -72,6 +109,30 @@ describe('Lottery smart contract', () => {
         assert.equal(playerTwoAccount, players[1]);
         assert.equal(playerThreeAccount, players[2]);
         assert.equal(3, players.length);
+    });
+
+    it('Should not allow same account to enter more than once', async () => {
+        await lotteryContract.methods.enter().send({
+            from: playerOneAccount,
+            value: web3.utils.toWei('0.02', 'ether')
+        });
+
+        try {
+            await lotteryContract.methods.enter().send({
+                from: playerOneAccount,
+                value: web3.utils.toWei('0.02', 'ether')
+            });
+        } catch (err) {
+            assert(err);
+            assert.equal(EVM_REVERT, err.message);
+
+            const players = await lotteryContract.methods.getPlayers().call({
+                from: deployerAccount
+            });
+    
+            assert.equal(playerOneAccount, players[0]);
+            assert.equal(1, players.length);
+        }
     });
 
     it('Should require a minimum amount of ether to enter', async () => {
@@ -117,6 +178,9 @@ describe('Lottery smart contract', () => {
         assert.equal(0, players.length);
 
         const loteryContractBalance = await web3.eth.getBalance(lotteryContract.options.address);
+        const winner = await lotteryContract.methods.lastWinner().call();
+
         assert.equal(0, loteryContractBalance);
+        assert.equal(playerOneAccount, winner)
     });
 });

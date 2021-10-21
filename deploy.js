@@ -24,7 +24,7 @@ const deploy = async () => {
         .deploy({ data: bytecode })
         .send({ from: accounts[0], gas: '1000000', gasPrice: '5000000000' });
 
-    console.log('Creation result:', result);
+    console.log('Crontract interface:', interface);
     console.log('_____________________________________________________________________')
     console.log(`Contract deployed to ${NETWORK} at address: ${result.options.address}`);
     console.log('_____________________________________________________________________')
