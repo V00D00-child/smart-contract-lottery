@@ -48,25 +48,6 @@ describe('Lottery smart contract', () => {
         assert.equal(1, players.length);
     });
 
-    it('Should emit Enter event when account enter to into lottery', async () => {
-        const enterResult = await lotteryContract.methods.enter().send({
-            from: playerOneAccount,
-            value: web3.utils.toWei('0.02', 'ether')
-        });
-
-        const players = await lotteryContract.methods.getPlayers().call({
-            from: deployerAccount
-        });
-
-        assert.equal(playerOneAccount, players[0]);
-        assert.equal(1, players.length);
-
-        // event emitted
-        assert.equal('Enter', enterResult.events.Enter.event);
-        assert.equal(1, enterResult.events.Enter.returnValues.players.length);
-
-    });
-
     it('Should not allow manage account to enter to into lottery', async () => {
         try {
             await lotteryContract.methods.enter().send({

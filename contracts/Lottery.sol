@@ -7,12 +7,6 @@ contract Lottery {
     uint256 public currentRound;
     mapping(address => mapping(uint256 => bool)) public activeInLottery;
 
-    event Enter(
-        address[] players,
-        uint balance,
-        uint timestamp
-    );
-
     function Lottery() public {
         manager = msg.sender;
         currentRound = 1;
@@ -29,7 +23,6 @@ contract Lottery {
         require(msg.value > .01 ether);
         players.push(msg.sender);
         activeInLottery[msg.sender][currentRound] = true;
-        emit Enter(players, this.balance, now);
     }
     
     function pseudoRandom() private view returns (uint) {
